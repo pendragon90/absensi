@@ -1,0 +1,16 @@
+.header {
+  height: rem(56px);
+  padding: 10px;
+  backdrop-filter: blur(10px);
+  position: fixed;
+  right: 0;
+  left: 0;
+}
+
+.inner {
+  height: rem(56px);
+  display: flex;
+  justify-content:end;
+  align-items: center;
+}
+
