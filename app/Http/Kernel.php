@@ -2,7 +2,7 @@
 
 namespace App\Http;
 
-use App\Http\Middleware\onlyAdmin;
+use App\Http\Middleware\OnlyAdmin;
 use App\Http\Middleware\OnlyStudent;
 use App\Http\Middleware\OnlyTeacher;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
@@ -67,7 +67,7 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'onlyAdmin' => onlyAdmin::class,
+        'onlyAdmin' => OnlyAdmin::class,
         'onlyStudent' => OnlyStudent::class,
         'onlyTeacher' => OnlyTeacher::class,
     ];

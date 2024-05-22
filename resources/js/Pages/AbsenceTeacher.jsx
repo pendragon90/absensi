@@ -24,7 +24,7 @@ export default function AbsenceTeacher() {
         learningActivityStatuses,
     } = usePage().props;
 
-    const { data, setData, post,processing } = useForm({
+    const { data, setData, post, processing } = useForm({
         teacher: "",
         classroom: "",
         lesson: "",
@@ -74,7 +74,7 @@ export default function AbsenceTeacher() {
     const learningActivityStatusOptions = learningActivityStatuses.map(
         (val) => ({ label: val.name, value: val.slug })
     );
-
+console.log(user)
     return (
         <HomeLayout user={user}>
             <Container size={420} my={40}>
@@ -155,7 +155,7 @@ export default function AbsenceTeacher() {
                             placeholder="boleh kosong"
                             clearable
                             value={data.photo_start}
-                            onChange={e => setData('photo_start', e)}
+                            onChange={(e) => setData("photo_start", e)}
                         />
 
                         <FileInput
@@ -165,7 +165,7 @@ export default function AbsenceTeacher() {
                             placeholder="boleh kosong"
                             clearable
                             value={data.photo_assignment}
-                            onChange={e => setData('photo_assignment', e)}
+                            onChange={(e) => setData("photo_assignment", e)}
                         />
 
                         <FileInput
@@ -175,11 +175,16 @@ export default function AbsenceTeacher() {
                             placeholder="boleh kosong"
                             clearable
                             value={data.photo_end}
-                            onChange={e => setData('photo_end', e)}
+                            onChange={(e) => setData("photo_end", e)}
                         />
 
-                        <Button type="submit" fullWidth mt="xl"  disabled={processing}
-    loading={processing}>
+                        <Button
+                            type="submit"
+                            fullWidth
+                            mt="xl"
+                            disabled={processing || user.data.role == 'teacher'}
+                            loading={processing}
+                        >
                             Send
                         </Button>
                     </form>

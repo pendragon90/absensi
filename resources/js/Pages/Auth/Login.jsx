@@ -10,15 +10,10 @@ import {
     TextInput,
 } from "@mantine/core";
 import classes from "./css/Login.module.css";
-import { useEffect, useState } from "react";
-import { useToggle } from "@mantine/hooks";
 import {  useForm } from "@inertiajs/react";
-import { router } from "@inertiajs/react";
-import HomeLayout from './../../Layouts/HomeLayout';
 import { usePage } from "@inertiajs/inertia-react";
 import { notifications } from "@mantine/notifications";
 import "@mantine/notifications/styles.css";
-import useDatas from './../../hooks/useDatas';
 import { Link } from "@inertiajs/inertia-react";
 
 export default function Login() {

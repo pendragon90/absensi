@@ -19,12 +19,11 @@ import HomeLayout from "./../../Layouts/HomeLayout";
 import { usePage } from "@inertiajs/inertia-react";
 import { notifications } from "@mantine/notifications";
 import "@mantine/notifications/styles.css";
-import useDatas from "./../../hooks/useDatas";
 import moment from "moment-timezone";
 import { DateInput } from "@mantine/dates";
 
 export default function Register() {
-    const { classrooms, teachers, errors } = usePage().props;
+    const { classrooms, errors } = usePage().props;
 
     const roles = [
         {label: "Guru", value:"1"},

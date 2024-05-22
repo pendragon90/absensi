@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Yaza\LaravelGoogleDriveStorage\Gdrive;
+use Illuminate\Support\Facades\Storage;
 
 class TeacherAbsenceResource extends JsonResource
 {
@@ -16,17 +16,7 @@ class TeacherAbsenceResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $formattedDate = null;
-
-        if ($this->created_at) {
-            try {
-                $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $this->created_at);
-                $formattedDate = $carbonDate->format('d F Y, H:i');
-            } catch (\Exception $e) {
-                // Handle exception if date format is incorrect
-                $formattedDate = 'Invalid date format';
-            }
-        }
+        $formattedDate = $this->formatDate($this->created_at);
 
         return [
             'date' => $formattedDate,
@@ -35,30 +25,29 @@ class TeacherAbsenceResource extends JsonResource
             'lesson' => $this->lesson->name,
             'absence_status' => $this->absenceStatus->name,
             'status_activity_learning' => $this->learningActivityStatus->name,
-            'photo_start' => $this->getPhotoUrl($this->photo_start),
-            'photo_end' => $this->getPhotoUrl($this->photo_end),
-            'photo_assignment' => $this->getPhotoUrl($this->photo_assignment),
+            'photo_start' => $this->photo_start ? Storage::url($this->photo_start) : null,
+            'photo_end' => $this->photo_end ? Storage::url($this->photo_end) : null,
+            'photo_assignment' => $this->photo_assignment ? Storage::url($this->photo_assignment) : null,
         ];
     }
 
     /**
-     * Get the URL of the photo from Google Drive.
+     * Format the date.
      *
-     * @param string|null $path
+     * @param  string|null  $date
      * @return string|null
      */
-    private function getPhotoUrl(?string $path): ?string
+    private function formatDate($date)
     {
-        if ($path) {
+        if ($date) {
             try {
-                $data = Gdrive::get($path);
-                return response($data->file, 200)
-                    ->header('Content-Type', $data->ext);
+                $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $date);
+                return $carbonDate->format('d F Y, H:i');
             } catch (\Exception $e) {
-                // Handle exception if file is not found
-                return null;
+                return 'Invalid date format';
             }
         }
+
         return null;
     }
 }

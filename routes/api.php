@@ -20,7 +20,3 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth')->get('/user', function (Request $request) {
     return $request->user();
 });
-
-Route::get('/classrooms/{classroom}/students', [HomeController::class, 'getStudentsByClassroom']);
-
-Route::get('/absence-latest/{user}', [HomeController::class, 'getAbsenceLatest']);

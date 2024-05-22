@@ -10,6 +10,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentAbsenceController;
 use App\Http\Controllers\TeacherAbsenceController;
 use App\Http\Controllers\UserController;
+use App\Http\Middleware\OnlyAdmin;
+use App\Http\Middleware\OnlyStudent;
+use App\Http\Middleware\OnlyTeacher;
 use Illuminate\Support\Facades\Route;
 
 
@@ -27,13 +30,13 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-    Route::get('/register', [AuthController::class, 'registerPage'])
-        ->name('register');
-    Route::post('/register', [AuthController::class, 'register']);
+Route::get('/register', [AuthController::class, 'registerPage'])
+    ->name('register');
+Route::post('/register', [AuthController::class, 'register']);
 
-    Route::get('/login', [AuthController::class, 'loginPage'])
-        ->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+Route::get('/login', [AuthController::class, 'loginPage'])
+    ->name('login');
+Route::post('/login', [AuthController::class, 'login']);
 
 
 Route::middleware(['auth'])->prefix('/dashboard')->group(function () {
@@ -46,18 +49,21 @@ Route::middleware(['auth'])->prefix('/dashboard')->group(function () {
     Route::get('/students', [UserController::class, 'students']);
 
 
-    Route::get('/teachers/absence', [TeacherAbsenceController::class, 'index']);
-    Route::post('/teachers/absence', [TeacherAbsenceController::class, 'store'])->middleware('onlyStudent');
+    Route::middleware(['onlyStudent'])->group(function () {
+        Route::get('/teachers/absence', [TeacherAbsenceController::class, 'index']);
+        Route::post('/teachers/absence', [TeacherAbsenceController::class, 'store']);
+        Route::post('/students/absence', [StudentAbsenceController::class, 'store']);
+    });
 
+    Route::middleware(['onlyTeacher'])->group(function () {
+        Route::get('/students/absence', [StudentAbsenceController::class, 'index']);
 
-    Route::get('/students/absence', [StudentAbsenceController::class, 'index']);
-    Route::post('/students/absence', [StudentAbsenceController::class, 'store'])->middleware('onlyStudent');
+        Route::post('/classrooms', [ClassroomController::class, 'store']);
+        Route::patch('/classrooms/{classroom}', [ClassroomController::class, 'update']);
+        Route::delete('/classrooms/{classroom}', [ClassroomController::class, 'destroy']);
 
-    Route::post('/classrooms', [ClassroomController::class, 'store']);
-    Route::patch('/classrooms/{classroom}', [ClassroomController::class, 'update'])->middleware('onlyAdmin', 'onlyTeacher');
-    Route::delete('/classrooms/{classroom}', [ClassroomController::class, 'destroy'])->middleware('onlyAdmin', 'onlyTeacher');
-
-    Route::post('/lessons', [LessonController::class, 'store']);
-    Route::patch('/lessons/{lesson}', [LessonController::class, 'update']);
-    Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy']);
+        Route::post('/lessons', [LessonController::class, 'store']);
+        Route::patch('/lessons/{lesson}', [LessonController::class, 'update']);
+        Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy']);
+    });
 });

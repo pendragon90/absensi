@@ -10,8 +10,7 @@
         "inertiajs/inertia-laravel": "^1.1",
         "laravel/framework": "^10.0",
         "laravel/sanctum": "^3.2",
-        "laravel/tinker": "^2.8",
-        "yaza/laravel-google-drive-storage": "2.0"
+        "laravel/tinker": "^2.8"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

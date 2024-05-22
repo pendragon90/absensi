@@ -1,26 +1,34 @@
 import { Paper, Title, Container, Button, Select, Group } from "@mantine/core";
 import classes from "./css/Absence.module.css";
-import { useToggle } from "@mantine/hooks";
 import HomeLayout from "../Layouts/HomeLayout";
 import { usePage } from "@inertiajs/inertia-react";
 import { notifications } from "@mantine/notifications";
 import { useEffect, useState } from "react";
-import useDatas from "../hooks/useDatas";
 import { useForm } from "@inertiajs/inertia-react";
 import { Link } from "@inertiajs/inertia-react";
 
 export default function AbsenceStudent() {
-    const { user, classrooms, absenceStatuses, lessons, teachers } =
+    const { user, classrooms, absenceStatuses, lessons, teachers, students } =
         usePage().props;
-    const { students, getStudentsByClassroom } = useDatas();
 
-    const { data, setData, post,processing } = useForm({
+    console.log(students);
+
+    const { data, setData, get, post, processing } = useForm({
         student: "",
         teacher: "",
         classroom: "",
         lesson: "",
         absence_status: "",
     });
+
+    useEffect(() => {
+        if (data.classroom !== "") {
+            get("/", {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        }
+    }, [data.classroom]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -84,7 +92,6 @@ export default function AbsenceStudent() {
                             data={classroomOptions}
                             onChange={(value) => {
                                 setData("classroom", value);
-                                getStudentsByClassroom(value);
                             }}
                             value={data.classroom}
                             required
@@ -142,8 +149,13 @@ export default function AbsenceStudent() {
                             searchable
                         />
 
-<Button type="submit" fullWidth mt="xl"  disabled={processing}
-    loading={processing}>
+                        <Button
+                            type="submit"
+                            fullWidth
+                            mt="xl"
+                            disabled={processing || user.data.role == 'teacher'}
+                            loading={processing}
+                        >
                             Send
                         </Button>
                     </form>

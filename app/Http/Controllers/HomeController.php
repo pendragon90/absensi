@@ -13,6 +13,7 @@ use App\Models\Lesson;
 use App\Models\StudentAbsence;
 use App\Models\TeacherAbsence;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
@@ -36,7 +37,7 @@ class HomeController extends Controller
         ]);
     }
 
-    public function student()
+    public function student(Request $request)
     {
         $user = Auth::user();
         $classrooms = Classroom::latest()->get();
@@ -44,9 +45,21 @@ class HomeController extends Controller
         $absenceStatuses = AbsenceStatus::latest()->get();
         $teachers = User::where('role_id', 1)->latest()->get();
 
+        $query = User::query();
+
+        if ($request->query('classroom')) {
+            $classroom = Classroom::where('slug', $request->query('classroom'))->first();
+            if ($classroom) {
+                $query->where('classroom_id', $classroom->id);
+            }
+        }
+
+        $students = $query->where('role_id',2)->latest()->get();
+
         return inertia('AbsenceStudent', [
             'user' => new ProfileResource($user),
             'teachers' => $teachers,
+            'students' => $students,
             'absenceStatuses' => $absenceStatuses,
             'classrooms' => $classrooms,
             'lessons' => $lessons

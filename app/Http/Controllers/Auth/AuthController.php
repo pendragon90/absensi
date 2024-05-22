@@ -68,7 +68,7 @@ class AuthController extends Controller
     {
         $name = $request->name;
         $username = $request->username;
-        $classroomId = null; 
+        $classroomId = null;
 
         $user = User::where('username', $request->username)->first();
         if ($user) {
@@ -83,7 +83,7 @@ class AuthController extends Controller
 
         $role = $request->role;
 
-        $user = User::create([
+        User::create([
             'role_id' => $role,
             'name' => $name,
             'slug' => $username . '-' . uniqid(), // Provide a value for the slug field
@@ -93,45 +93,51 @@ class AuthController extends Controller
             'password' => Hash::make($request->password)
         ]);
 
-        Auth::login($user);
+        // Auth::login($user);
 
         if ($role == 2) {
-            return redirect('/');
+            return redirect()->intended('/');
         }
 
-        return redirect('/dashboard/students/absence');
+        return redirect()->intended('/dashboard/students/absence');
     }
 
 
     public function login(Request $request)
     {
+        $credentials = $request->validate([
+            'username' => ['required'],
+            'password' => ['required'],
+        ]);
+
         $user = User::where('username', $request->username)->first();
 
         if (!$user) {
             return redirect()->back()->withErrors(['error' => 'Username tidak ditemukan']);
         }
 
-        if ($user && Hash::check($request->password, $user->password)) {
-            Auth::login($user);
-
-            // Check the user's role ID
+        if (Auth::attempt($credentials)) {
+            // Auth::login($user);
+            $request->session()->regenerate();
             if ($user->role_id === 1 || $user->role_id === 3) {
-                // Redirect to the dashboard if role ID is 1 or 3
-                return redirect('/dashboard/students/absence');
+                return redirect()->intended('/dashboard/students/absence');
             } elseif ($user->role_id === 2) {
-                return redirect('/');
+                return redirect()->intended('/');
             }
         }
 
-        // Redirect back with error message if authentication fails
         return back()->withErrors(['error' => 'Password salah']);
     }
 
 
 
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::logout();
+ 
+        $request->session()->invalidate();
+     
+        $request->session()->regenerateToken();
 
         return redirect('/login');
     }

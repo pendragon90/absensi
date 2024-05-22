@@ -18,7 +18,9 @@ class StudentAbsenceController extends Controller
     public function index(Request $request)
     {
         $query = StudentAbsence::query();
+        $queryStudents = User::query();
         $user = Auth::user();
+
         if ($request->query('date')) {
             $date = Carbon::parse($request->query('date'))->setTimezone('Asia/Jakarta');
             $query->whereDate('created_at', $date);
@@ -28,6 +30,7 @@ class StudentAbsenceController extends Controller
             $classroom = Classroom::where('slug', $request->query('classroom'))->first();
             if ($classroom) {
                 $query->where('classroom_id', $classroom->id);
+                $queryStudents->where('classroom_id', $classroom->id);
             }
         }
 
@@ -53,6 +56,7 @@ class StudentAbsenceController extends Controller
         }
 
         $studentAbsences = $query->latest()->with(['user','classroom', 'lesson', 'teacher','student', 'absenceStatus'])->paginate($request->query('perpage') ?? 20);
+        $studentsFilter = $queryStudents->where('role_id',2)->latest()->get();
 
         $classrooms = Classroom::latest()->get();
         $lessons = Lesson::latest()->get();
@@ -63,6 +67,7 @@ class StudentAbsenceController extends Controller
         return inertia('Dashboard/Students/DashboardStudents', [
             'user' => new ProfileResource($user),
             'studentAbsences' => StudentAbsenceResource::collection($studentAbsences),
+            'studentsFilter' => $studentsFilter,
             'students' => $students,
             'teachers' => $teachers,
             'absenceStatuses' => $absenceStatuses,

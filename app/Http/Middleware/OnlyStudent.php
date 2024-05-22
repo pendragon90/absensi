@@ -16,7 +16,7 @@ class OnlyStudent
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(Auth::user()->role_id == 2) {
+        if(Auth::user()->role_id === 2 || 3) {
             return $next($request);
            }
            return redirect('/');

@@ -4,8 +4,9 @@ import { FaUsers } from "react-icons/fa";
 import { useClickOutside } from "@mantine/hooks";
 import { SiGoogleclassroom } from "react-icons/si";
 import { MdOutlineDashboard, MdOutlinePlayLesson } from "react-icons/md";
+import { IoMdHome } from "react-icons/io";
 
-export default function SideNavStudents() {
+export default function SideNavTeachers({ user }) {
     const [opened, setOpened] = useState(false);
     const ref = useClickOutside(() => setOpened(false));
 
@@ -15,7 +16,7 @@ export default function SideNavStudents() {
                 onClick={() => setOpened(true)}
                 aria-controls="sidebar-multi-level-sidebar"
                 type="button"
-                className="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400"
+                className="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg sm:hidden md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400"
             >
                 <svg
                     className="w-6 h-6"
@@ -36,7 +37,7 @@ export default function SideNavStudents() {
                 id="sidebar-multi-level-sidebar"
                 className={`bg-white fixed top-0 left-0 z-40 w-64 h-screen border-r border-gray-200 transition-transform ${
                     opened ? "" : "-translate-x-full"
-                } sm:translate-x-0`}
+                } sm:translate-x-0 md:translate-x-0`}
                 aria-label="Sidebar"
                 ref={ref}
             >
@@ -45,14 +46,35 @@ export default function SideNavStudents() {
                 </div>
                 <div className="h-full px-3 py-4 overflow-y-auto flex flex-col gap-5">
                     <div className="space-y-2 font-medium">
-                        <Link
-                            href="/dashboard/teachers/absence/"
-                            className="flex gap-4 items-center"
-                        >
-                            <MdOutlineDashboard />
-                            Daftar Absensi Guru
+                        <Link href="/" className="flex gap-4 items-center">
+                            <IoMdHome />
+                            Home
                         </Link>
                     </div>
+                    {user.data.role == "teacher" ||
+                        ("admin" && (
+                            <div className="space-y-2 font-medium">
+                                <Link
+                                    href="/dashboard/students/absence/"
+                                    className="flex gap-4 items-center"
+                                >
+                                    <MdOutlineDashboard />
+                                    Daftar Absensi Murid
+                                </Link>
+                            </div>
+                        ))}
+                    {user.data.role == "student" ||
+                        ("admin" && (
+                            <div className="space-y-2 font-medium">
+                                <Link
+                                    href="/dashboard/teacher/absence/"
+                                    className="flex gap-4 items-center"
+                                >
+                                    <MdOutlineDashboard />
+                                    Daftar Absensi Guru
+                                </Link>
+                            </div>
+                        ))}
                     <div className="space-y-2 font-medium">
                         <Link
                             href="/dashboard/teachers"

@@ -14,83 +14,45 @@ use Carbon\Carbon;
 use Dotenv\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator as FacadesValidator;
-use Illuminate\Support\Str;
-use Yaza\LaravelGoogleDriveStorage\Gdrive;
 
 class TeacherAbsenceController extends Controller
 {
+    private function uploadImage($image, $folderPath)
+    {
+        if ($image) {
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->storeAs($folderPath, $imageName, 'public');
+            return $folderPath . '/' . $imageName;
+        }
+        return null;
+    }
+    
     public function store(Request $request)
     {
-        // Validate the request to ensure files are present and other fields are correct
-        $validator = FacadesValidator::make($request->all(), [
-            'teacher' => 'required|exists:users,slug',
-            'classroom' => 'required|exists:classrooms,slug',
-            'lesson' => 'required|exists:lessons,slug',
-            'learning_activity_status' => 'required|exists:learning_activity_statuses,slug',
-            'absence_status' => 'required|exists:absence_statuses,slug',
-            'photo_start' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
-            'photo_end' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
-            'photo_assignment' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
-        ]);
-    
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-    
         $user_id = User::where('role_id', 1)->where('slug', $request->teacher)->first()->id;
         $classroom_id = Classroom::where('slug', $request->classroom)->first()->id;
         $lesson_id = Lesson::where('slug', $request->lesson)->first()->id;
         $learning_activity_status_id = LearningActivityStatus::where('slug', $request->learning_activity_status)->first()->id;
         $absence_status_id = AbsenceStatus::where('slug', $request->absence_status)->first()->id;
-    
-        // Initialize photo paths as null
-        $photo_start_name = null;
-        $photo_end_name = null;
-        $photo_assignment_name = null;
-    
-        // Get the current timestamp
-        $timestamp = Carbon::now()->format('YmdHis');
-    
-        // Function to sanitize file names
-        function sanitizeFileName($fileName) {
-            return preg_replace('/[^\w\-_\.]/', '_', $fileName);
-        }
-    
-        // Check if photo_start is uploaded
-        if ($request->hasFile('photo_start')) {
-            $photo_start_extension = $request->file('photo_start')->getClientOriginalExtension();
-            $photo_start_name = sanitizeFileName('photo_start-' . $request->teacher . '-' . $timestamp . '.' . $photo_start_extension);
-            Gdrive::put('gambar_absensi_guru/' . $photo_start_name, file_get_contents($request->file('photo_start')->getRealPath()));
-        }
-    
-        // Check if photo_end is uploaded
-        if ($request->hasFile('photo_end')) {
-            $photo_end_extension = $request->file('photo_end')->getClientOriginalExtension();
-            $photo_end_name = sanitizeFileName('photo_end-' . $request->teacher . '-' . $timestamp . '.' . $photo_end_extension);
-            Gdrive::put('gambar_absensi_guru/' . $photo_end_name, file_get_contents($request->file('photo_end')->getRealPath()));
-        }
-    
-        // Check if photo_assignment is uploaded
-        if ($request->hasFile('photo_assignment')) {
-            $photo_assignment_extension = $request->file('photo_assignment')->getClientOriginalExtension();
-            $photo_assignment_name = sanitizeFileName('photo_assignment-' . $request->teacher . '-' . $timestamp . '.' . $photo_assignment_extension);
-            Gdrive::put('gambar_absensi_guru/' . $photo_assignment_name, file_get_contents($request->file('photo_assignment')->getRealPath()));
-        }
-    
-        // Create the TeacherAbsence record
+
+        $monthYear = date('Y_m');
+        $folderPath = 'images/' . $monthYear;
+
+        $photoStartPath = $this->uploadImage($request->file('photo_start'), $folderPath);
+        $photoEndPath = $this->uploadImage($request->file('photo_end'), $folderPath);
+        $photoAssignmentPath = $this->uploadImage($request->file('photo_assignment'), $folderPath);
+
         TeacherAbsence::create([
             'user_id' => $user_id,
             'classroom_id' => $classroom_id,
             'lesson_id' => $lesson_id,
             'learning_activity_status_id' => $learning_activity_status_id,
             'absence_status_id' => $absence_status_id,
-            'photo_start' => $photo_start_name,
-            'photo_end' => $photo_end_name,
-            'photo_assignment' => $photo_assignment_name,
+            'photo_start' => $photoStartPath,
+            'photo_end' => $photoEndPath,
+            'photo_assignment' => $photoAssignmentPath,
         ]);
-    
+
         return redirect('/dashboard/teachers/absence/');
     }
 

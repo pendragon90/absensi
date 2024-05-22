@@ -25,6 +25,7 @@ function DashboardStudents() {
         classrooms,
         lessons,
         students,
+        studentsFilter,
         teachers,
         absenceStatuses,
     } = usePage().props;
@@ -154,7 +155,7 @@ function DashboardStudents() {
                     <Select
                         label="Murid"
                         placeholder="Pilih Nama Murid"
-                        data={students.map((student) => ({
+                        data={studentsFilter.map((student) => ({
                             value: student.slug,
                             label: student.name,
                         }))}
