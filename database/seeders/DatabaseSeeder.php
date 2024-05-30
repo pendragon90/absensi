@@ -17,21 +17,21 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $this->call([
-        //     RoleSeeder::class,
-        //     ClassroomSeeder::class,
-        //     LessonSeeder::class,
-        //     AbsenceStatusSeeder::class,
-        //     LearningActivityStatusSeeder::class,
-        //     UserSeeder::class,
-        // ]);
-        // User::factory(50)->create();
+        $this->call([
+            RoleSeeder::class,
+            ClassroomSeeder::class,
+            LessonSeeder::class,
+            AbsenceStatusSeeder::class,
+            LearningActivityStatusSeeder::class,
+            UserSeeder::class,
+        ]);
+        User::factory(50)->create();
         TeacherAbsence::factory(250)->create();
-        // StudentAbsence::factory(250)->create();
+        StudentAbsence::factory(250)->create();
 
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
     }
 }
