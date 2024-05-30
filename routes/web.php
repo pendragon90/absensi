@@ -48,6 +48,9 @@ Route::middleware(['auth'])->prefix('/dashboard')->group(function () {
 
     Route::get('/students', [UserController::class, 'students']);
 
+    Route::middleware(['onlyAdmin'])->group(function () {
+        Route::delete('/teachers/absence', [TeacherAbsenceController::class, 'destroy']);
+    });
 
     Route::middleware(['onlyStudent'])->group(function () {
         Route::get('/teachers/absence', [TeacherAbsenceController::class, 'index']);

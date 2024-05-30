@@ -8,15 +8,17 @@ import {
     Button,
     Image,
     Skeleton,
+    Flex,
 } from "@mantine/core";
 import DashboardLayout from "../../../Layouts/DashboardLayout";
 import { DateInput } from "@mantine/dates";
-import moment from "moment-timezone";
 import Pagination from "../../../Components/Pagination";
 import { useDisclosure } from "@mantine/hooks";
 import { MdFilterListAlt } from "react-icons/md";
 import { IoPrint } from "react-icons/io5";
 import {useReactToPrint} from "react-to-print"
+import MonthInput from "../../../Components/MonthInput";
+import DeleteAbsences from './../../../Components/DeleteAbsences';
 
 function DashboardStudents() {
     const {
@@ -28,6 +30,8 @@ function DashboardStudents() {
         studentsFilter,
         teachers,
         absenceStatuses,
+        minDate,
+        maxDate,
     } = usePage().props;
     const { data, setData, get } = useForm({
         date: "",
@@ -42,14 +46,7 @@ function DashboardStudents() {
     const componentPdf = useRef()
 
     const handleFilterChange = (name, value) => {
-        if (name === "date" && value) {
-            const jakartaDate = moment(value)
-                .tz("Asia/Jakarta")
-                .format("YYYY-MM-DD HH:mm:ss");
-            setData(name, jakartaDate);
-        } else {
             setData(name, value);
-        }
     };
 
     useEffect(() => {
@@ -113,11 +110,14 @@ function DashboardStudents() {
                     title="Filter Table"
                     centered
                 >
-                    <DateInput
-                        value={data.date ? new Date(data.date) : null}
-                        onChange={(value) => handleFilterChange("date", value)}
-                        label="Date input"
-                        placeholder="Date input"
+                     <div
+      className="flex flex-col gap-5"
+    >
+                    <MonthInput
+value={data.date ? new Date(data.date) : null}
+onChange={(value) => handleFilterChange("date", value)}
+label="Date input"
+placeholder="Date input"
                     />
 
                     <Select
@@ -199,6 +199,7 @@ function DashboardStudents() {
                         clearable
                         nothingFoundMessage="Nothing found..."
                     />
+                    </div>
                 </Modal>
 
                 <Group mb={10} justify="space-between">
@@ -214,6 +215,11 @@ function DashboardStudents() {
                 />
 
                     <Group>
+                    <DeleteAbsences
+                        minDate={minDate}
+                        maxDate={maxDate}
+                        url="/dashboard/students/absence"
+                    />
                         <Button
                             leftSection={<IoPrint className="h-5" />}
                             variant="default"

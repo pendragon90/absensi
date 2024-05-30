@@ -64,7 +64,12 @@ class StudentAbsenceController extends Controller
         $teachers = User::where('role_id', 1)->latest()->get();
         $students = User::where('role_id', 2)->latest()->get();
 
+        $minDate = StudentAbsence::min('created_at');
+        $maxDate = StudentAbsence::max('created_at');
+
         return inertia('Dashboard/Students/DashboardStudents', [
+            'minDate' => $minDate,
+            'maxDate' => $maxDate,
             'user' => new ProfileResource($user),
             'studentAbsences' => StudentAbsenceResource::collection($studentAbsences),
             'studentsFilter' => $studentsFilter,
@@ -94,4 +99,23 @@ class StudentAbsenceController extends Controller
 
         return redirect('/dashboard/students/absence');
     }
+
+    public function destroy(Request $request)
+{
+    // Mengambil input tanggal dari request dan mengonversinya menjadi objek Carbon
+    $startDate = Carbon::parse($request->input('deleteByMonth.0'))->startOfMonth();
+    $endDate = $request->input('deleteByMonth.1') ? Carbon::parse($request->input('deleteByMonth.1'))->endOfMonth() : null;
+    
+    // Jika endDate null, atur endDate sama dengan startDate
+    if (is_null($endDate)) {
+        $endDate = $startDate->copy()->endOfMonth();
+    }
+
+    // Menghapus data dari tabel TeacherAbsence dalam rentang tanggal yang diberikan
+    StudentAbsence::whereBetween('created_at', [$startDate, $endDate])->delete();
+
+    // Redirect kembali dengan pesan sukses
+    return redirect()->back();
+}
+
 }

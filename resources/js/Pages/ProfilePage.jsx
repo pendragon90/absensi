@@ -1,8 +1,6 @@
 import {
-    PasswordInput,
     Paper,
     Title,
-    Text,
     Container,
     Group,
     Button,
@@ -10,19 +8,19 @@ import {
     TextInput,
     Avatar,
     Modal,
+    Text,
 } from "@mantine/core";
 import classes from "./Auth/css/Login.module.css";
-import { useEffect, useState } from "react";
-import { useDisclosure, useToggle } from "@mantine/hooks";
+import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@inertiajs/react";
-import { router } from "@inertiajs/react";
 import { usePage } from "@inertiajs/inertia-react";
 import { notifications } from "@mantine/notifications";
 import "@mantine/notifications/styles.css";
-import moment from "moment-timezone";
 import { Link } from "@inertiajs/inertia-react";
-import { DateInput } from "@mantine/dates";
 import { AiFillEdit } from "react-icons/ai";
+import MonthInput from "../Components/MonthInput";
+import { useState } from "react";
+import { ImCancelCircle } from "react-icons/im";
 
 export default function ProfilePage() {
     const { user, classrooms, errors } = usePage().props;
@@ -34,12 +32,34 @@ export default function ProfilePage() {
         value: classroom.slug,
     };
 
-    const { data, patch, setData, processing } = useForm({
+    const { data,get, patch, setData, processing } = useForm({
         username: user.data.username,
         name: user.data.name,
         classroom: userClassroom.value,
         birthdate: user.data.birthdate,
     });
+
+    const [isDataChanged, setIsDataChanged] = useState(false);
+
+    const clearData = () => {
+        get('/profile')
+    };
+
+    const checkDataChanged = (newData) => {
+        const isChanged =
+            newData.username !== user.data.username ||
+            newData.name !== user.data.name ||
+            newData.classroom !== userClassroom.value ||
+            newData.birthdate !== user.data.birthdate;
+
+        setIsDataChanged(isChanged);
+    };
+
+    const handleChange = (field, value) => {
+        const newData = { ...data, [field]: value };
+        setData(field, value);
+        checkDataChanged(newData);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -49,6 +69,7 @@ export default function ProfilePage() {
                     title: `Profil berhasil diperbarui! 🎉`,
                     color: "green",
                 });
+                setIsDataChanged(false); // Reset isDataChanged setelah submit
             },
         });
     };
@@ -79,108 +100,99 @@ export default function ProfilePage() {
                     <TextInput
                         label="Username"
                         placeholder="john123"
-                        value={data.username}
-                        onChange={(value) =>
-                            setData("username", value.target.value)
-                        }
-                        defaultValue="a"
+                        defaultValue={data.username}
+                        onChange={(e) => handleChange("username", e.target.value)}
                         required
-                        searchable
                     />
                     <TextInput
-                        mt="lg"
+                        mt="md"
                         label="Nama"
                         placeholder="john123"
-                        value={data.name}
-                        onChange={(value) =>
-                            setData("name", value.target.value)
-                        }
-                        defaultValue="a"
+                        defaultValue={data.name}
+                        onChange={(e) => handleChange("name", e.target.value)}
                         required
-                        searchable
                     />
 
-                    {user.data.role == "student" && (
+                    {user.data.role === "student" && (
                         <Select
-                            mt="lg"
+                            mt="md"
                             label="Kelas"
                             placeholder="Pilih kelas"
                             data={classroomOptions}
-                            onChange={(value) => setData("classroom", value)}
-                            value={data.classroom}
+                            onChange={(value) => handleChange("classroom", value)}
+                            defaultValue={data.classroom}
                             required
                             searchable
                         />
                     )}
 
-                    <DateInput
-                        mt="lg"
-                        value={data.birthdate ? new Date(data.birthdate) : null} // Convert data.birthdate to Date object if it's not null
-                        onChange={(value) => {
-                            // Check if value is provided and format it accordingly
-                            const jakartaDate = value
-                                ? moment(value)
-                                      .tz("Asia/Jakarta")
-                                      .format("YYYY-MM-DD")
-                                : null;
-                            setData("birthdate", jakartaDate);
-                        }}
-                        label="Tanggal Lahir"
-                        placeholder="Pilih Tanggal Lahir"
+                    <MonthInput
+                        value={data.birthdate}
+                        onChange={(e) => handleChange("birthdate", e)}
                     />
-
-                    <Group justify="space-between" mt="lg">
-                        <Link
-                            className="lowercase text-blue-500 cursor-pointer text-md"
-                            href="/"
-                        >
-                            kembali ke home
-                        </Link>
-                        <Link
-                            className="lowercase text-blue-500 cursor-pointer text-md"
-                            href="/reset"
-                        >
-                            reset password
-                        </Link>
-                    </Group>
-                    <Modal
-                        opened={opened}
-                        onClose={close}
-                        withCloseButton={false}
-                    >
-                        <Text className="text-center">
-                            Yakin ingin Edit Profil?
-                        </Text>
-                        <Group justify="flex-end" gap="sm" mt={20}>
-                            <Button
-                                variant="filled"
-                                color="red"
-                                onClick={() => close()}
-                            >
-                                Tidak
-                            </Button>
-                            <Button
-                                type="submit"
-                                variant="filled"
-                                color="green"
-                                onClick={(e) => handleSubmit(e)}
-                                disabled={processing}
-                                loading={processing}
-                            >
-                                Ya
-                            </Button>
-                        </Group>
-                    </Modal>
-                    <Button
-                        mt="md"
-                        onClick={open}
-                        variant="filled"
-                        color="yellow"
-                        leftSection={<AiFillEdit className="h-4" />}
-                    >
-                        Ubah Profile
-                    </Button>
                 </form>
+                <Group justify="space-between" mt="md">
+                    <Link
+                        className="lowercase text-blue-500 cursor-pointer text-md"
+                        href="/"
+                    >
+                        kembali ke home
+                    </Link>
+                    <Link
+                        className="lowercase text-blue-500 cursor-pointer text-md"
+                        href="/reset"
+                    >
+                        reset password
+                    </Link>
+                </Group>
+                <Modal
+                    opened={opened}
+                    onClose={close}
+                    withCloseButton={false}
+                >
+                    <h1 className="text-xl text-center font-bold">Konfirmasi</h1>
+                    <Group justify="center" gap="sm" mt={20}>
+                        <Button
+                            variant="filled"
+                            color="red"
+                            onClick={() => close()}
+                        >
+                            Tidak
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="filled"
+                            color="green"
+                            onClick={(e) => handleSubmit(e)}
+                            disabled={processing}
+                            loading={processing}
+                        >
+                            Ya
+                        </Button>
+                    </Group>
+                </Modal>
+                {isDataChanged && (
+                    <Group>
+                        <Button
+                            mt="md"
+                            onClick={open}
+                            variant="filled"
+                            color="yellow"
+                            leftSection={<AiFillEdit className="h-4" />}
+                        >
+                            Ubah Profile
+                        </Button>
+                        <Button
+                            mt="md"
+                            onClick={clearData}
+                            variant="filled"
+                            color="red"
+                            leftSection={<ImCancelCircle className="h-4" />}
+                        >
+                            Batal
+                        </Button>
+                    </Group>
+                )}
             </Paper>
         </Container>
     );

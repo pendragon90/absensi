@@ -14,8 +14,7 @@ import { Link, useForm } from "@inertiajs/react";
 import { usePage } from "@inertiajs/inertia-react";
 import { notifications } from "@mantine/notifications";
 import "@mantine/notifications/styles.css";
-import moment from "moment-timezone";
-import { DateInput } from "@mantine/dates";
+import MonthInput from "../../Components/MonthInput";
 
 export default function Reset() {
     const { errors } = usePage().props;
@@ -26,6 +25,7 @@ export default function Reset() {
     });
 
     const handleSubmit = async (e) => {
+        console.log(data);
         e.preventDefault();
         patch("/reset", {
             onSuccess: () => {
@@ -59,28 +59,16 @@ export default function Reset() {
                         searchable
                     />
 
-                    <DateInput
-                        mt={15}
-                        value={data.birthdate ? new Date(data.birthdate) : null} // Convert data.birthdate to Date object if it's not null
-                        onChange={(value) => {
-                            // Check if value is provided and format it accordingly
-                            const jakartaDate = value
-                                ? moment(value)
-                                      .tz("Asia/Jakarta")
-                                      .format("YYYY-MM-DD")
-                                : null;
-                            setData("birthdate", jakartaDate);
-                        }}
-                        label="Tanggal Lahir"
-                        placeholder="Pilih Tanggal Lahir"
+                    <MonthInput
+                        value={data.birthdate}
+                        onChange={(e) => setData("birthdate", e)}
                     />
-
                     <PasswordInput
                         value={data.password}
                         onChange={(e) => setData("password", e.target.value)}
-                        label="Password"
+                        label="Password Baru"
                         placeholder="password123"
-                        mt={15}
+                        mt="md"
                     />
 
                     <Button

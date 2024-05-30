@@ -67,7 +67,7 @@ export default function SideNavTeachers({ user }) {
                         ("admin" && (
                             <div className="space-y-2 font-medium">
                                 <Link
-                                    href="/dashboard/teacher/absence/"
+                                    href="/dashboard/teachers/absence/"
                                     className="flex gap-4 items-center"
                                 >
                                     <MdOutlineDashboard />

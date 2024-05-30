@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { usePage, useForm } from "@inertiajs/inertia-react";
 import {
     Group,
@@ -10,13 +10,14 @@ import {
     Skeleton,
 } from "@mantine/core";
 import DashboardLayout from "../../../Layouts/DashboardLayout";
-import { DateInput } from "@mantine/dates";
-import moment from "moment-timezone";
+import { DateInput, MonthPicker, MonthPickerInput } from "@mantine/dates";
 import Pagination from "../../../Components/Pagination";
 import { useDisclosure } from "@mantine/hooks";
-import { MdFilterListAlt } from "react-icons/md";
+import { MdDelete, MdFilterListAlt } from "react-icons/md";
 import { IoPrint } from "react-icons/io5";
-import {useReactToPrint} from "react-to-print"
+import { useReactToPrint } from "react-to-print";
+import DeleteAbsences from "../../../Components/DeleteAbsences";
+import MonthInput from "../../../Components/MonthInput";
 
 function DashboardTeachers() {
     const {
@@ -27,6 +28,8 @@ function DashboardTeachers() {
         teachers,
         absenceStatuses,
         learningActivityStatuses,
+        minDate,
+        maxDate,
     } = usePage().props;
     const { data, setData, get } = useForm({
         date: "",
@@ -38,19 +41,12 @@ function DashboardTeachers() {
         perpage: "20",
     });
     const [opened, { open, close }] = useDisclosure(false);
-    const componentPdf = useRef()
 
-    console.log(teacherAbsences)
+    const componentPdf = useRef();
 
     const handleFilterChange = (name, value) => {
-        if (name === "date" && value) {
-            const jakartaDate = moment(value)
-                .tz("Asia/Jakarta")
-                .format("YYYY-MM-DD HH:mm:ss");
-            setData(name, jakartaDate);
-        } else {
+
             setData(name, value);
-        }
     };
 
     useEffect(() => {
@@ -81,7 +77,7 @@ function DashboardTeachers() {
     const handlePrint = useReactToPrint({
         content: () => componentPdf.current,
         documentTitle: "Table Absence",
-    })
+    });
 
     const rows = teacherAbsences.data ? (
         teacherAbsences.data.map((val, index) => (
@@ -113,105 +109,104 @@ function DashboardTeachers() {
             preserveScroll: true,
         });
     };
-
+    
     return (
         <DashboardLayout user={user}>
-                <Modal
-                    opened={opened}
-                    onClose={close}
-                    title="Filter Table"
-                    centered
-                >
-                    <DateInput
-                        value={data.date ? new Date(data.date) : null}
-                        onChange={(value) => handleFilterChange("date", value)}
-                        label="Date input"
-                        placeholder="Date input"
-                    />
+            <Modal
+                opened={opened}
+                onClose={close}
+                title="Filter Table"
+                centered
+            >
+                <div
+      className="flex flex-col gap-5"
+    >
 
-                    <Select
-                        label="Kelas"
-                        placeholder="Pilih kelas"
-                        data={classrooms.map((classroom) => ({
-                            value: classroom.slug,
-                            label: classroom.name,
-                        }))}
-                        value={data.classroom}
-                        onChange={(value) =>
-                            handleFilterChange("classroom", value)
-                        }
-                        searchable
-                        clearable
-                        nothingFoundMessage="Nothing found..."
+ <MonthInput
+value={data.date ? new Date(data.date) : null}
+onChange={(value) => handleFilterChange("date", value)}
+label="Date input"
+placeholder="Date input"
                     />
+                <Select
+                    label="Kelas"
+                    placeholder="Pilih kelas"
+                    data={classrooms.map((classroom) => ({
+                        value: classroom.slug,
+                        label: classroom.name,
+                    }))}
+                    value={data.classroom}
+                    onChange={(value) => handleFilterChange("classroom", value)}
+                    searchable
+                    clearable
+                    nothingFoundMessage="Nothing found..."
+                />
 
-                    <Select
-                        label="Status Absensi"
-                        placeholder="Pilih Status Absensi"
-                        data={absenceStatuses.map((absenceStatus) => ({
-                            value: absenceStatus.slug,
-                            label: absenceStatus.name,
-                        }))}
-                        value={data.absenceStatus}
-                        onChange={(value) =>
-                            handleFilterChange("absenceStatus", value)
-                        }
-                        searchable
-                        clearable
-                        nothingFoundMessage="Nothing found..."
-                    />
+                <Select
+                    label="Status Absensi"
+                    placeholder="Pilih Status Absensi"
+                    data={absenceStatuses.map((absenceStatus) => ({
+                        value: absenceStatus.slug,
+                        label: absenceStatus.name,
+                    }))}
+                    value={data.absenceStatus}
+                    onChange={(value) =>
+                        handleFilterChange("absenceStatus", value)
+                    }
+                    searchable
+                    clearable
+                    nothingFoundMessage="Nothing found..."
+                />
 
-                    <Select
-                        label="Guru"
-                        placeholder="Pilih Nama Guru"
-                        data={teachers.map((teacher) => ({
-                            value: teacher.slug,
-                            label: teacher.name,
-                        }))}
-                        value={data.teacher}
-                        onChange={(value) =>
-                            handleFilterChange("teacher", value)
-                        }
-                        searchable
-                        clearable
-                        nothingFoundMessage="Nothing found..."
-                    />
+                <Select
+                    label="Guru"
+                    placeholder="Pilih Nama Guru"
+                    data={teachers.map((teacher) => ({
+                        value: teacher.slug,
+                        label: teacher.name,
+                    }))}
+                    value={data.teacher}
+                    onChange={(value) => handleFilterChange("teacher", value)}
+                    searchable
+                    clearable
+                    nothingFoundMessage="Nothing found..."
+                />
 
-                    <Select
-                        label="Status Aktifitas Pembelajaran"
-                        placeholder="Pilih Status"
-                        data={learningActivityStatuses.map(
-                            (learningActivityStatus) => ({
-                                value: learningActivityStatus.slug,
-                                label: learningActivityStatus.name,
-                            })
-                        )}
-                        value={data.learningActivityStatus}
-                        onChange={(value) =>
-                            handleFilterChange("learningActivityStatus", value)
-                        }
-                        searchable
-                        clearable
-                        nothingFoundMessage="Nothing found..."
-                    />
-                    <Select
-                        label="Mapel"
-                        placeholder="Pilih Mapel"
-                        data={lessons.map((lesson) => ({
-                            value: lesson.slug,
-                            label: lesson.name,
-                        }))}
-                        value={data.lesson}
-                        onChange={(value) =>
-                            handleFilterChange("lesson", value)
-                        }
-                        searchable
-                        clearable
-                        nothingFoundMessage="Nothing found..."
-                    />
-                </Modal>
+                <Select
+                    label="Status Aktifitas Pembelajaran"
+                    placeholder="Pilih Status"
+                    data={learningActivityStatuses.map(
+                        (learningActivityStatus) => ({
+                            value: learningActivityStatus.slug,
+                            label: learningActivityStatus.name,
+                        })
+                    )}
+                    value={data.learningActivityStatus}
+                    onChange={(value) =>
+                        handleFilterChange("learningActivityStatus", value)
+                    }
+                    searchable
+                    clearable
+                    nothingFoundMessage="Nothing found..."
+                />
+                <Select
+                    label="Mapel"
+                    placeholder="Pilih Mapel"
+                    data={lessons.map((lesson) => ({
+                        value: lesson.slug,
+                        label: lesson.name,
+                    }))}
+                    value={data.lesson}
+                    onChange={(value) => handleFilterChange("lesson", value)}
+                    searchable
+                    clearable
+                    nothingFoundMessage="Nothing found..."
+                />
+    </div>
+            </Modal>
 
-                <Group mb={10} justify="space-between">
+            <Group mb={10} justify="space-between">
+                
                 <Select
                     label="Pilih jumlah data perhalaman"
                     placeholder=""
@@ -223,24 +218,29 @@ function DashboardTeachers() {
                     onChange={(e) => handleFilterChange("perpage", e)}
                 />
 
-                    <Group>
-                        <Button
-                            leftSection={<IoPrint className="h-5" />}
-                            variant="default"
-                            onClick={handlePrint}
-                        >
-                            Print
-                        </Button>
+                <Group>
+                    <DeleteAbsences
+                        minDate={minDate}
+                        maxDate={maxDate}
+                        url="/dashboard/teachers/absence"
+                    />
+                    <Button
+                        leftSection={<IoPrint className="h-5" />}
+                        variant="default"
+                        onClick={handlePrint}
+                    >
+                        Print
+                    </Button>
 
-                        <Button
-                            onClick={open}
-                            leftSection={<MdFilterListAlt className="h-5" />}
-                            variant="default"
-                        >
-                            Filter
-                        </Button>
-                    </Group>
+                    <Button
+                        onClick={open}
+                        leftSection={<MdFilterListAlt className="h-5" />}
+                        variant="default"
+                    >
+                        Filter
+                    </Button>
                 </Group>
+            </Group>
             <div ref={componentPdf}>
                 <Table>
                     <Table.Thead>

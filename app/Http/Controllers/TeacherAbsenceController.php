@@ -11,18 +11,42 @@ use App\Models\Lesson;
 use App\Models\TeacherAbsence;
 use App\Models\User;
 use Carbon\Carbon;
-use Dotenv\Validator;
+use Intervention\Image\Facades\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class TeacherAbsenceController extends Controller
 {
+
     private function uploadImage($image, $folderPath)
     {
         if ($image) {
+            // Generate a filename
             $imageName = time() . '_' . $image->getClientOriginalName();
-            $image->storeAs($folderPath, $imageName, 'public');
-            return $folderPath . '/' . $imageName;
+            $fullPath = $folderPath . '/' . $imageName;
+    
+            // Check if the image size is greater than 500KB (512000 bytes)
+            if ($image->getSize() > 512000) {
+                // Resize the image
+                $img = Image::make($image);
+                $img->resize(800, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+    
+                // Save the resized image to the specified folder
+                // Ensure the directory exists
+                Storage::disk('public')->makeDirectory($folderPath);
+                $img->save(storage_path('app/public/' . $fullPath));
+            } else {
+                // Save the original image if it's not greater than 500KB
+                // Ensure the directory exists
+                Storage::disk('public')->makeDirectory($folderPath);
+                $image->storeAs($folderPath, $imageName, 'public');
+            }
+    
+            return $fullPath;
         }
         return null;
     }
@@ -34,14 +58,14 @@ class TeacherAbsenceController extends Controller
         $lesson_id = Lesson::where('slug', $request->lesson)->first()->id;
         $learning_activity_status_id = LearningActivityStatus::where('slug', $request->learning_activity_status)->first()->id;
         $absence_status_id = AbsenceStatus::where('slug', $request->absence_status)->first()->id;
-
+    
         $monthYear = date('Y_m');
         $folderPath = 'images/' . $monthYear;
-
+    
         $photoStartPath = $this->uploadImage($request->file('photo_start'), $folderPath);
         $photoEndPath = $this->uploadImage($request->file('photo_end'), $folderPath);
         $photoAssignmentPath = $this->uploadImage($request->file('photo_assignment'), $folderPath);
-
+    
         TeacherAbsence::create([
             'user_id' => $user_id,
             'classroom_id' => $classroom_id,
@@ -52,9 +76,10 @@ class TeacherAbsenceController extends Controller
             'photo_end' => $photoEndPath,
             'photo_assignment' => $photoAssignmentPath,
         ]);
-
+    
         return redirect('/dashboard/teachers/absence/');
     }
+
 
     public function index(Request $request)
     {
@@ -109,7 +134,13 @@ class TeacherAbsenceController extends Controller
         $teachers = User::where('role_id', 1)->latest()->get();
         $learningActivityStatuses = LearningActivityStatus::latest()->get();
 
+        $minDate = TeacherAbsence::min('created_at');
+        $maxDate = TeacherAbsence::max('created_at');
+
+
         return inertia('Dashboard/Teachers/DashboardTeachers', [
+            'minDate' => $minDate,
+            'maxDate' => $maxDate,
             'user' => new ProfileResource($user),
             'teacherAbsences' => TeacherAbsenceResource::collection($teacherAbsences),
             'teachers' => $teachers,
@@ -119,4 +150,33 @@ class TeacherAbsenceController extends Controller
             'learningActivityStatuses' => $learningActivityStatuses,
         ]);
     }
+
+    public function destroy(Request $request)
+    {
+        // Mengambil input tanggal dari request dan mengonversinya menjadi objek Carbon
+        $startDate = Carbon::parse($request->input('deleteByMonth.0'))->startOfMonth();
+        $endDate = $request->input('deleteByMonth.1') ? Carbon::parse($request->input('deleteByMonth.1'))->endOfMonth() : null;
+        
+        // Jika endDate null, atur endDate sama dengan startDate
+        if (is_null($endDate)) {
+            $endDate = $startDate->copy()->endOfMonth();
+        }
+    
+        $currentDate = $startDate->copy();
+        while ($currentDate->lte($endDate)) {
+            $folderPath = 'images/' . $currentDate->format('Y_m');
+            
+            // Hapus direktori
+            Storage::disk('public')->deleteDirectory($folderPath);
+            
+            $currentDate->addMonth();
+        }
+    
+        // Menghapus data dari tabel TeacherAbsence dalam rentang tanggal yang diberikan
+        TeacherAbsence::whereBetween('created_at', [$startDate, $endDate])->delete();
+    
+        // Redirect kembali dengan pesan sukses
+        return redirect()->back();
+    }
+    
 }

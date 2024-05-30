@@ -52,7 +52,7 @@ class AuthController extends Controller
         if (!$user) {
             return redirect()->back()->withErrors(['error' => 'Username tidak ditemukan']);
         }
-        $birthdate = Carbon::parse($request->input('birthday'))->format('Y-m-d');
+        $birthdate = $request->date('birthdate');
         $newPassword = $request->input('password');
 
         if ($user->birthdate == $birthdate) {
