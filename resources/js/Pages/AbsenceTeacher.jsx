@@ -75,7 +75,7 @@ export default function AbsenceTeacher() {
     label: val.name,
     value: val.slug
   }))
-  console.log(user)
+
   return (
     <HomeLayout user={user}>
       <Container size={420} my={40}>
@@ -101,6 +101,7 @@ export default function AbsenceTeacher() {
               value={data.classroom}
               required
               searchable
+              clearable
             />
 
             <Select
@@ -112,6 +113,7 @@ export default function AbsenceTeacher() {
               onChange={value => setData('teacher', value)}
               required
               searchable
+              clearable
             />
 
             <Select
@@ -123,6 +125,7 @@ export default function AbsenceTeacher() {
               onChange={value => setData('lesson', value)}
               required
               searchable
+              clearable
             />
 
             <Select
@@ -133,6 +136,7 @@ export default function AbsenceTeacher() {
               onChange={value => setData('learning_activity_status', value)}
               required
               searchable
+              clearable
             />
 
             <Select
@@ -143,6 +147,7 @@ export default function AbsenceTeacher() {
               onChange={value => setData('absence_status', value)}
               required
               searchable
+              clearable
             />
 
             <FileInput

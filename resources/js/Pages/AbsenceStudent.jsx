@@ -96,56 +96,64 @@ export default function AbsenceStudent() {
               value={data.classroom}
               required
               searchable
+              clearable
             />
+{data.classroom && (
+<>
+<Select
+  mt={15}
+  label="Siswa"
+  placeholder="Pilih Nama siswa"
+  data={studentOptions}
+  value={data.student}
+  onChange={value => {
+    setData('student', value)
+  }}
+  required
+  searchable
+  clearable
+/>
 
-            <Select
-              mt={15}
-              label="Siswa"
-              placeholder="Pilih Nama siswa"
-              data={studentOptions}
-              value={data.student}
-              onChange={value => {
-                setData('student', value)
-              }}
-              required
-              searchable
-            />
+<Select
+  mt={15}
+  label="Guru"
+  placeholder="Pilih Nama guru"
+  data={teacherOptions}
+  value={data.teacher}
+  onChange={value => {
+    setData('teacher', value)
+  }}
+  required
+  searchable
+  clearable
+/>
 
-            <Select
-              mt={15}
-              label="Guru"
-              placeholder="Pilih Nama guru"
-              data={teacherOptions}
-              value={data.teacher}
-              onChange={value => {
-                setData('teacher', value)
-              }}
-              required
-              searchable
-            />
+<Select
+  mt={15}
+  label="Mapel"
+  placeholder="Pilih Mapel"
+  data={lessonOptions}
+  value={data.lesson}
+  onChange={value => {
+    setData('lesson', value)
+  }}
+  required
+  searchable
+  clearable
+/>
 
-            <Select
-              mt={15}
-              label="Mapel"
-              placeholder="Pilih Mapel"
-              data={lessonOptions}
-              value={data.lesson}
-              onChange={value => {
-                setData('lesson', value)
-              }}
-              required
-              searchable
-            />
-
-            <Select
-              mt={15}
-              label="Absensi Kehadiran"
-              placeholder="Pilih Absensi Kehadiran"
-              data={absenceStatusOptions}
-              onChange={value => setData('absence_status', value)}
-              required
-              searchable
-            />
+<Select
+  mt={15}
+  label="Absensi Kehadiran"
+  placeholder="Pilih Absensi Kehadiran"
+  data={absenceStatusOptions}
+  onChange={value => setData('absence_status', value)}
+  required
+  searchable
+  clearable
+  />
+</>
+)}
 
             <Button
               type="submit"
