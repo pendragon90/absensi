@@ -30,7 +30,7 @@
 
 ## Requirements
 - PHP v8.3.4
-- Node Js v18
+- Node Js v20
 - Laragon, Mysql
 - Laravel v10
 
